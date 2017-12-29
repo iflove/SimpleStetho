@@ -1,1 +1,1 @@
-include ':app', ':stetho'
+include ':app', ':stetho', ':stethomqtt'

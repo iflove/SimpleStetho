@@ -4,12 +4,16 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
-import com.roogle.simple.stetho.common.FunctionCallBack;
-import com.roogle.simple.stetho.inspector.protocol.CommunicatingProtocol;
+import com.roogle.simple.stetho.common.Consumer;
 
 import org.json.JSONException;
+import org.json.JSONObject;
 
 public class SimpleStetho {
+
+    public static final String ACTION_QUERY_DATABASE = "query_database";
+    public static final String ACTION_QUERY_LOGCAT = "query_logcat";
+    public static final String ACTION_QUERY_LOGCAT_ANR = "query_logcat_anr";
 
     private final Context context;
     private final DatabaseProvider databaseProvider;
@@ -38,48 +42,56 @@ public class SimpleStetho {
         this.databaseName = databaseName;
     }
 
-    public void executeCommand(@NonNull String command, final FunctionCallBack<String> callBack) {
+    public String getDatabaseName() {
+        return databaseName;
+    }
+
+    public void executeCommand(@NonNull final String command, final Consumer<String> callBack) {
         if (callBack == null) {
             return;
         }
         try {
-            CommunicatingProtocol protocol = new CommunicatingProtocol().parse(command);
-            if (!TextUtils.isEmpty(protocol.action)) {
-                switch (protocol.action) {
-                    case CommunicatingProtocol.ACTION_QUERY_DATABASE: {
-                        if (TextUtils.isEmpty(protocol.message.sql)) {
-                            callBack.apply("Error: message sql parameters is Required ");
-                            return;
-                        }
+            JSONObject commandJsonObject = new JSONObject(command);
+            final String action = commandJsonObject.optString("action");
+            final JSONObject messageJsonObject = commandJsonObject.optJSONObject("message");
+
+            if (!TextUtils.isEmpty(action)) {
+                switch (action) {
+                    case ACTION_QUERY_DATABASE: {
                         if (this.databaseName == null) {
-                            callBack.apply("Error: databaseName is Required Set");
-                            return;
+                            throw new IllegalArgumentException("Error: Default DatabaseName is Required Set");
                         }
-                        String result;
-                        if ("json".equals(protocol.message.returnDataType)) {
-                            result = getDatabaseProvider().getExecuteSQLResponseJson(this.databaseName, protocol.message.sql).toString();
-                        } else {
-                            result = getDatabaseProvider().getExecuteSQLResponseConsoleTableString(this.databaseName, protocol.message.sql);
+                        if (messageJsonObject == null) {
+                            throw new IllegalArgumentException("Error: message parameters is Required ");
                         }
+                        String sql = messageJsonObject.optString("sql");
+                        if (TextUtils.isEmpty(sql)) {
+                            throw new IllegalArgumentException("Error: message sql parameters is Required ");
+                        }
+                        String result = getDatabaseProvider().getExecuteSQLResponseTableText(this.databaseName, sql);
                         callBack.apply(result);
                     }
                     break;
-                    case CommunicatingProtocol.ACTION_QUERY_LOGCAT: {
-                        if (checkQueryLogcatParameter(protocol)) {
-                            getLogcatProvider().readLogcatLogFiles(protocol.message.begin,
-                                    protocol.message.end, new FunctionCallBack<String>() {
-                                        @Override
-                                        public void apply(String s) {
-                                            callBack.apply(s);
-                                        }
-                                    });
+                    case ACTION_QUERY_LOGCAT: {
+                        if (messageJsonObject == null) {
+                            throw new IllegalArgumentException("Error: message parameters is Required ");
+                        }
+                        String begin = messageJsonObject.optString("begin");
+                        String end = messageJsonObject.optString("end");
+                        if (!TextUtils.isEmpty(begin) && !TextUtils.isEmpty(end)) {
+                            getLogcatProvider().readLogcatLogFiles(begin, end, new Consumer<String>() {
+                                @Override
+                                public void apply(String s) {
+                                    callBack.apply(s);
+                                }
+                            });
                         } else {
-                            callBack.apply("Error: message begin end parameters is Required ");
+                            throw new IllegalArgumentException("Error: message begin end parameters is Required ");
                         }
                     }
                     break;
-                    case CommunicatingProtocol.ACTION_QUERY_LOGCAT_ANR: {
-                        getLogcatProvider().readTracesLogFile(new FunctionCallBack<String>() {
+                    case ACTION_QUERY_LOGCAT_ANR: {
+                        getLogcatProvider().readTracesLogFile(new Consumer<String>() {
                             @Override
                             public void apply(String s) {
                                 callBack.apply(s);
@@ -88,23 +100,17 @@ public class SimpleStetho {
                     }
                     break;
                     default:
-                        callBack.apply("Error: No support action");
-                        break;
+                        throw new IllegalArgumentException("Error: No support action");
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
             if (e instanceof IllegalArgumentException) {
-                callBack.apply(e.toString());
+                callBack.apply(e.getMessage());
             } else if (e instanceof JSONException) {
                 callBack.apply("Error: Command format wrong");
             }
-
         }
     }
 
-    private boolean checkQueryLogcatParameter(CommunicatingProtocol serverSQLiteProtocol) {
-        return serverSQLiteProtocol.message != null && serverSQLiteProtocol.message.begin != null
-                && serverSQLiteProtocol.message.end != null;
-    }
 }

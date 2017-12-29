@@ -1,11 +1,12 @@
-package com.roogle.simple.mqtt;
+package com.roogle.stetho.mqtt;
 
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
 import com.lazy.library.logging.Logcat;
 import com.roogle.simple.stetho.SimpleStetho;
-import com.roogle.simple.stetho.common.FunctionCallBack;
+import com.roogle.simple.stetho.common.Consumer;
+import com.roogle.simple.stetho.common.ZipUtil;
 
 import org.eclipse.paho.android.service.MqttAndroidClient;
 import org.eclipse.paho.client.mqttv3.DisconnectedBufferOptions;
@@ -18,6 +19,8 @@ import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
+import java.io.IOException;
+
 public final class StethoMqttClient {
     private static final String TAG = "StethoMqttClient";
     private MqttAndroidClient mqttAndroidClient;
@@ -29,6 +32,7 @@ public final class StethoMqttClient {
     private final String publishTopic;
     private final String userName;
     private final String password;
+    private boolean isUsingZip = false;
 
     public StethoMqttClient(@NonNull final SimpleStetho simpleStetho, @NonNull String serverUri, @NonNull String clientId,
                             @NonNull String subscriptionTopic, @NonNull String publishTopic) {
@@ -151,16 +155,21 @@ public final class StethoMqttClient {
                 @Override
                 public void messageArrived(String topic, MqttMessage message) throws Exception {
                     // message Arrived!
-                    final String messageString = new String(message.getPayload()).trim();
+                    String messageString = new String(message.getPayload()).trim();
                     Logcat.i(TAG, "Message: " + topic + " : " + messageString);
 
                     if (TextUtils.isEmpty(messageString)) {
                         return;
                     }
-                    simpleStetho.executeCommand(messageString, new FunctionCallBack<String>() {
+                    if (isUsingZip) {
+                        messageString = ZipUtil.unCompressString(messageString);
+                    }
+                    simpleStetho.executeCommand(messageString, new Consumer<String>() {
                         @Override
                         public void apply(String msg) {
-                            publishMessage(msg);
+                            if (!TextUtils.isEmpty(msg)) {
+                                publishMessage(msg);
+                            }
                         }
                     });
                 }
@@ -177,13 +186,21 @@ public final class StethoMqttClient {
             return;
         }
         try {
+            if (isUsingZip) {
+                publishMessage = ZipUtil.compressString(publishMessage);
+            }
             MqttMessage message = new MqttMessage();
             message.setQos(0);
             message.setPayload(publishMessage.getBytes());
             mqttAndroidClient.publish(publishTopic, message);
         } catch (MqttException e) {
             e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
+    public void setUsingZip(boolean usingZip) {
+        isUsingZip = usingZip;
+    }
 }

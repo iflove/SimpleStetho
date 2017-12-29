@@ -1,6 +1,6 @@
 package com.roogle.simple.stetho.common;
 
 
-public interface FunctionCallBack<T> {
+public interface Consumer<T> {
     void apply(T t);
 }

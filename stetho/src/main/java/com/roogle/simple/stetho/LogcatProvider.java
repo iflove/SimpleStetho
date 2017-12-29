@@ -4,7 +4,7 @@ import android.content.Context;
 import android.os.Environment;
 
 import com.roogle.simple.stetho.common.DateUtil;
-import com.roogle.simple.stetho.common.FunctionCallBack;
+import com.roogle.simple.stetho.common.Consumer;
 import com.roogle.simple.stetho.common.StorageUtils;
 
 import java.io.BufferedReader;
@@ -154,7 +154,7 @@ public class LogcatProvider {
         }
     }
 
-    private void readLogcatLogFiles(final Long startTime, final Long endTime, final List<File> fileList, final FunctionCallBack<String> callBack) {
+    private void readLogcatLogFiles(final Long startTime, final Long endTime, final List<File> fileList, final Consumer<String> callBack) {
         if (fileList.isEmpty()) {
             callBack.apply("Error: Can't find logs");
             return;
@@ -213,7 +213,7 @@ public class LogcatProvider {
         });
     }
 
-    public void readLogcatLogFiles(final String start, final String end, final FunctionCallBack<String> callBack) {
+    public void readLogcatLogFiles(final String start, final String end, final Consumer<String> callBack) {
         try {
             long startDateTime = 0;
             long endDateTime = 0;
@@ -264,7 +264,7 @@ public class LogcatProvider {
                 try {
                     fileDate = DateUtil.parse(fileDateStr, DateUtil.SIMPLE_DATE_FORMAT_PATTERN);
                     long fileDateTime = fileDate.getTime();
-                    if (startTime <= fileDateTime && endTime >= fileDateTime) {
+                    if (startTime <= fileDateTime && endTime > fileDateTime) {
                         fileArrayList.add(file);
                     }
                 } catch (ParseException e) {
@@ -275,7 +275,7 @@ public class LogcatProvider {
         return files;
     }
 
-    void readTracesLogFile(final FunctionCallBack<String> callBack) {
+    void readTracesLogFile(final Consumer<String> callBack) {
         final File file = new File("/data/anr/traces.txt");
         if (!file.exists() || !file.canRead()) {
             callBack.apply("Error: Can't find traces.txt");

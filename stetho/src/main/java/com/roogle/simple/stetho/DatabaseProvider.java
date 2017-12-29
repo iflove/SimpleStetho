@@ -13,6 +13,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteException;
 import android.support.annotation.IntRange;
+import android.support.annotation.NonNull;
 
 import com.lazy.library.logging.Logcat;
 import com.roogle.simple.stetho.common.ConsoleTable;
@@ -57,6 +58,9 @@ public class DatabaseProvider {
 
     private DatabaseDriver mDatabaseDriver;
 
+    private static final String QUERY_COUNT_TABLE_SQL = "SELECT count(*) FROM %s";
+    private static final String PAGE_TABLE_SQL = "SELECT * FROM %s %s LIMIT '%s' OFFSET '%s'";
+
     public DatabaseProvider(Context context) {
         mDatabaseDriver = (new SqliteDatabaseDriver(context, new DefaultDatabaseFilesProvider(context), new DefaultDatabaseConnectionProvider()));
     }
@@ -70,18 +74,19 @@ public class DatabaseProvider {
         return jsonArray;
     }
 
-    public String getDatabaseNamesConsoleTableString() {
+    public String getDatabaseNamesTableText() {
         ConsoleTable consoleTable = new ConsoleTable(1, true);
         consoleTable.appendRow();
         consoleTable.appendColumn("database_name");
         List<DatabaseDescriptor> databaseNames = getDatabaseNames();
         for (int i = 0; i < databaseNames.size(); i++) {
+            consoleTable.appendRow();
             consoleTable.appendColumn(databaseNames.get(i).name());
         }
         return consoleTable.toString();
     }
 
-    public JSONArray getTableNamesJson(String name) throws JSONException {
+    public JSONArray getTableNamesJson(@NonNull final String name) throws JSONException {
         DatabaseDescriptor descriptor = getDatabaseDescriptor(name);
         JSONArray jsonArray = new JSONArray();
         if (descriptor == null) {
@@ -95,23 +100,24 @@ public class DatabaseProvider {
         return jsonArray;
     }
 
-    public String getTableNamesConsoleTableString(String name) {
+    public String getTableNamesTableText(@NonNull final String name) {
         DatabaseDescriptor descriptor = getDatabaseDescriptor(name);
         ConsoleTable consoleTable = new ConsoleTable(1, true);
         consoleTable.appendRow();
-        consoleTable.appendColumn("tableName");
+        consoleTable.appendColumn("table_name");
         if (descriptor == null) {
             return consoleTable.toString();
         }
 
         List<String> tableNames = getTableNames(descriptor);
         for (int i = 0; i < tableNames.size(); i++) {
+            consoleTable.appendRow();
             consoleTable.appendColumn(tableNames.get(i));
         }
         return consoleTable.toString();
     }
 
-    public JSONObject getExecuteSQLResponseJson(String name, String query) throws JSONException {
+    public JSONObject getExecuteSQLResponseJson(@NonNull final String name, @NonNull final String query) throws JSONException {
         ExecuteSQLResponse executeSQLResponse = getExecuteSQLResponse(name, query);
 
         JSONObject jsonObject = new JSONObject();
@@ -153,7 +159,7 @@ public class DatabaseProvider {
         return executeSQLResponseJSONObject;
     }
 
-    public String getExecuteSQLResponseConsoleTableString(String name, String query) {
+    public String getExecuteSQLResponseTableText(String name, String query) {
         ExecuteSQLResponse executeSQLResponse = getExecuteSQLResponse(name, query);
 
         if (executeSQLResponse == null) {
@@ -186,23 +192,25 @@ public class DatabaseProvider {
         return result;
     }
 
-    public String getExecuteSQLResponseTablePageInfoString(String name, String query, String table, int selectLimitSize, int page) {
-        ExecuteSQLResponse executeSQLResponse = getExecuteSQLResponse(name, query);
-        String tableName = "tableName: " + table;
-        StringBuilder stringBuffer = new StringBuilder(tableName);
+    public String getExecuteSQLResponsePageInfo(String name, String table, String query, int selectLimitSize, int page) {
+        ExecuteSQLResponse executeSQLResponse = getExecuteSQLResponse(name, String.format(QUERY_COUNT_TABLE_SQL, table));
+        String tableName = "table_name: " + table;
+        StringBuilder stringBuilder = new StringBuilder(tableName);
         if (executeSQLResponse == null) {
-            stringBuffer.append(LogcatProvider.LINE_BREAK);
-            return stringBuffer.toString();
+            stringBuilder.append(LogcatProvider.LINE_BREAK);
+            return stringBuilder.toString();
         }
 
         if (executeSQLResponse.values != null && executeSQLResponse.columnNames != null) {
             int count = Integer.valueOf(executeSQLResponse.values.get(0));
-            stringBuffer.append("   第").append(page).append("/").append((count / selectLimitSize) + 1).append("页");
-            stringBuffer.append("   （共").append(count).append("条）");
-            return stringBuffer.append(LogcatProvider.LINE_BREAK).toString();
-
+            stringBuilder.append("   第").append(page).append("/").append((count / selectLimitSize) + 1).append("页");
+            stringBuilder.append("   （共").append(count).append("条）");
+            stringBuilder.append(LogcatProvider.LINE_BREAK);
+            stringBuilder.append(getExecuteSQLResponseTableText(name, String.format(PAGE_TABLE_SQL, table, query, selectLimitSize, page)));
+            return stringBuilder.toString();
         }
-        return stringBuffer.append(LogcatProvider.LINE_BREAK).toString();
+
+        return stringBuilder.append(LogcatProvider.LINE_BREAK).toString();
     }
 
     private DatabaseDescriptor getDatabaseDescriptor(String name) {
@@ -291,7 +299,7 @@ public class DatabaseProvider {
     }
 
 
-    private static ArrayList<String> flattenRows(Cursor cursor,@IntRange(from = 0) int limit) {
+    private static ArrayList<String> flattenRows(Cursor cursor, @IntRange(from = 0) int limit) {
         ArrayList<String> flatList = new ArrayList<>();
         final int numColumns = cursor.getColumnCount();
         for (int row = 0; row < limit && cursor.moveToNext(); row++) {

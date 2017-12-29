@@ -105,7 +105,7 @@ public class SqliteDatabaseDriver
         SQLiteDatabase database = openDatabase(databaseDesc);
         try {
             Cursor cursor = database.rawQuery("SELECT name FROM sqlite_master WHERE type IN (?, ?)",
-                    new String[]{"tableName", "view"});
+                    new String[]{"table", "view"});
             try {
                 List<String> tableNames = new ArrayList<String>();
                 while (cursor.moveToNext()) {

@@ -4,6 +4,10 @@ import android.content.Context;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
 
+import com.lazy.library.logging.Logcat;
+import com.roogle.simple.stetho.SimpleStetho;
+
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -16,12 +20,33 @@ import static org.junit.Assert.assertEquals;
  */
 @RunWith(AndroidJUnit4.class)
 public class ExampleInstrumentedTest {
-	@Test
-	public void useAppContext() throws Exception {
-		// Context of the app under test.
-		Context appContext = InstrumentationRegistry.getTargetContext();
+    private static final String TAG = "ExampleInstrumentedTest";
+    SimpleStetho simpleStetho;
 
-		assertEquals("com.facebook.stetho.test", appContext.getPackageName());
+    @Before
+    public void setup() {
+        // Context of the app under test.
+        Context appContext = InstrumentationRegistry.getTargetContext();
+        assertEquals("com.facebook.stetho.test", appContext.getPackageName());
 
+        simpleStetho = new SimpleStetho(appContext);
+    }
+
+    @Test
+    public void testGetDatabaseNames() throws Exception {
+        Logcat.i().ln().msg(simpleStetho.getDatabaseProvider().getDatabaseNamesTableText()).out();
+        Logcat.json(TAG, simpleStetho.getDatabaseProvider().getDatabaseNamesJson().toString());
+    }
+
+    @Test
+    public void testGetTableNames() throws Exception {
+        Logcat.i().ln().msg(simpleStetho.getDatabaseProvider().getTableNamesTableText("youzi.db")).out();
+        Logcat.json(TAG, simpleStetho.getDatabaseProvider().getTableNamesJson("zxbox-db").toString());
+    }
+
+    @Test
+    public void testGetExecuteSQLResponse() throws Exception {
+        Logcat.i().ln().msg(simpleStetho.getDatabaseProvider().getExecuteSQLResponseTableText("youzi.db","select * from product")).out();
+        Logcat.json(TAG, simpleStetho.getDatabaseProvider().getExecuteSQLResponseJson("zxbox-db","select * from ALBUM").toString());
     }
 }

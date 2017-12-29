@@ -2,13 +2,13 @@ package com.roogle.simple.stetho
 
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
-import com.roogle.simple.mqtt.StethoMqttClient
+import com.roogle.stetho.mqtt.StethoMqttClient
 
 class MainActivity : AppCompatActivity() {
 
     val serverUri = "tcp://iot.eclipse.org:1883"
     val clientId = "paho-30505377805850"
-    lateinit var stethoMqttClient: StethoMqttClient
+    lateinit var stethoMqttClient: com.roogle.stetho.mqtt.StethoMqttClient
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -16,6 +16,9 @@ class MainActivity : AppCompatActivity() {
         println("clientId: ${clientId}")
         val simpleStetho = SimpleStetho(this)
         simpleStetho.logcatProvider.startGatherLogcatInfo()
+
+        simpleStetho.databaseName = "youzi.db"
+
         stethoMqttClient = StethoMqttClient(simpleStetho, serverUri, clientId, "topic/server/${clientId}", "topic/client/${clientId}")
         stethoMqttClient.connect()
     }
