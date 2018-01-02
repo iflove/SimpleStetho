@@ -206,8 +206,8 @@ public class DatabaseProvider {
             stringBuilder.append("   第").append(page).append("/").append((count / selectLimitSize) + 1).append("页");
             stringBuilder.append("   （共").append(count).append("条）");
             stringBuilder.append(LogcatProvider.LINE_BREAK);
-            stringBuilder.append(getExecuteSQLResponseTableText(name, String.format(PAGE_TABLE_SQL, table, query, selectLimitSize, page)));
-            return stringBuilder.toString();
+            stringBuilder.append(getExecuteSQLResponseTableText(name, String.format(PAGE_TABLE_SQL, table, query, selectLimitSize,
+                    page > 1 ? (page - 1) * selectLimitSize : 0)));
         }
 
         return stringBuilder.append(LogcatProvider.LINE_BREAK).toString();
