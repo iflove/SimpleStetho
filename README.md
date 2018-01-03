@@ -158,16 +158,12 @@ mqtt 工具有很多
 
 ## 效果图
 
-![][Screenshots_20180103120722.png]
-[Screenshots_20180103120722.png]: https://github.com/iflove/SimpleStetho/blob/master/Screenshots/Screenshots_20180103120722.png
+[![Screenshots_20180103120722.png](https://github.com/iflove/SimpleStetho/blob/master/Screenshots/Screenshots_20180103120722.png)]
 
+[![Screenshots_20180103122833.png](https://github.com/iflove/SimpleStetho/blob/master/Screenshots/Screenshots_20180103122833.png)]
 
-![][Screenshots_20180103122336.png]
-[Screenshots_20180103122336.png]: https://github.com/iflove/SimpleStetho/blob/master/Screenshots/Screenshots_20180103122336.png
+[![Screenshots_20180103122336.png](https://github.com/iflove/SimpleStetho/blob/master/Screenshots/Screenshots_20180103122336.png)]
 
-
-![][Screenshots_20180103122336.png]
-[Screenshots_20180103122336.png]: https://github.com/iflove/SimpleStetho/blob/master/Screenshots/Screenshots_20180103122336.png
 
 ## License
 
