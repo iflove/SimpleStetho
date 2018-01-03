@@ -1,4 +1,4 @@
-# SimpleStetho [![Build Status](https://travis-ci.org/facebook/stetho.svg?branch=master)](https://travis-ci.org/facebook/stetho)
+# SimpleStetho [![Build Status](https://travis-ci.org/facebook/stetho.svg?branch=master)](https://travis-ci.org/facebook/stetho) [![Download](https://api.bintray.com/packages/lazy/maven/stetho/images/download.svg)](https://bintray.com/lazy/maven/stetho/_latestVersion)
 
 [SimpleStetho ](https://github.com/iflove/SimpleStetho) 一款基于[Stetho ](https://github.com/facebook/stetho) 为Android应用程序提供数据库、LOG日志信息调试桥梁简单工具库。开发人员可以使用 `MQTT`  框架使用它的功能。
 
@@ -144,7 +144,7 @@ topic/server/paho-30505377805850
 
 
 ## 改善 SimpleStetho!
-欢迎提出问题
+欢迎提出问题!
 
 
 
@@ -153,8 +153,21 @@ topic/server/paho-30505377805850
 mqtt 工具有很多
 
 - [eclipse-paho](https://repo.eclipse.org/content/repositories/paho-releases/org/eclipse/paho/org.eclipse.paho.ui.app/) 
+- [mqttfx](http://www.jensd.de/apps/mqttfx/1.4.2/)
 
 
+## 效果图
+
+![][Screenshots_20180103120722.png]
+[Screenshots_20180103120722.png]: https://github.com/iflove/SimpleStetho/blob/master/Screenshots/Screenshots_20180103120722.png
+
+
+![][Screenshots_20180103122336.png]
+[Screenshots_20180103122336.png]: https://github.com/iflove/SimpleStetho/blob/master/Screenshots/Screenshots_20180103122336.png
+
+
+![][Screenshots_20180103122336.png]
+[Screenshots_20180103122336.png]: https://github.com/iflove/SimpleStetho/blob/master/Screenshots/Screenshots_20180103122336.png
 
 ## License
 
