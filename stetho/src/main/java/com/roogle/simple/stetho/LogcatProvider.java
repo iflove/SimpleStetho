@@ -264,7 +264,7 @@ public class LogcatProvider {
                 try {
                     fileDate = DateUtil.parse(fileDateStr, DateUtil.SIMPLE_DATE_FORMAT_PATTERN);
                     long fileDateTime = fileDate.getTime();
-                    if (startTime <= fileDateTime && endTime > fileDateTime) {
+                    if (startTime <= fileDateTime && endTime >= fileDateTime) {
                         fileArrayList.add(file);
                     }
                 } catch (ParseException e) {
