@@ -1,8 +1,9 @@
 package com.facebook.stetho;
 
 import android.content.Context;
-import android.support.test.InstrumentationRegistry;
-import android.support.test.runner.AndroidJUnit4;
+
+import androidx.test.platform.app.InstrumentationRegistry;
+import androidx.test.runner.AndroidJUnit4;
 
 import com.lazy.library.logging.Logcat;
 import com.roogle.simple.stetho.SimpleStetho;
@@ -26,7 +27,7 @@ public class ExampleInstrumentedTest {
     @Before
     public void setup() {
         // Context of the app under test.
-        Context appContext = InstrumentationRegistry.getTargetContext();
+        Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
         assertEquals("com.facebook.stetho.test", appContext.getPackageName());
 
         simpleStetho = new SimpleStetho(appContext);
@@ -35,18 +36,18 @@ public class ExampleInstrumentedTest {
     @Test
     public void testGetDatabaseNames() throws Exception {
         Logcat.i().ln().msg(simpleStetho.getDatabaseProvider().getDatabaseNamesTableText()).out();
-        Logcat.json(TAG, simpleStetho.getDatabaseProvider().getDatabaseNamesJson().toString());
+        Logcat.i().tag(TAG).fmtJSON(simpleStetho.getDatabaseProvider().getDatabaseNamesJson().toString());
     }
 
     @Test
     public void testGetTableNames() throws Exception {
         Logcat.i().ln().msg(simpleStetho.getDatabaseProvider().getTableNamesTableText("youzi.db")).out();
-        Logcat.json(TAG, simpleStetho.getDatabaseProvider().getTableNamesJson("zxbox-db").toString());
+//        Logcat.json(TAG, simpleStetho.getDatabaseProvider().getTableNamesJson("zxbox-db").toString());
     }
 
     @Test
     public void testGetExecuteSQLResponse() throws Exception {
-        Logcat.i().ln().msg(simpleStetho.getDatabaseProvider().getExecuteSQLResponseTableText("youzi.db","select * from product")).out();
-        Logcat.json(TAG, simpleStetho.getDatabaseProvider().getExecuteSQLResponseJson("zxbox-db","select * from ALBUM").toString());
+        Logcat.i().ln().msg(simpleStetho.getDatabaseProvider().getExecuteSQLResponseTableText("youzi.db", "select * from product")).out();
+//        Logcat.json(TAG, simpleStetho.getDatabaseProvider().getExecuteSQLResponseJson("zxbox-db", "select * from ALBUM").toString());
     }
 }

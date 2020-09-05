@@ -1,8 +1,9 @@
 package com.roogle.simple.stetho;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
 import android.text.TextUtils;
+
+import androidx.annotation.NonNull;
 
 import com.roogle.simple.stetho.common.Consumer;
 
@@ -18,12 +19,14 @@ public class SimpleStetho {
     private final Context context;
     private final DatabaseProvider databaseProvider;
     private final LogcatProvider logcatProvider;
+    private final SysLogcatProvider sysLogcatProvider;
     private String databaseName = null;
 
     public SimpleStetho(@NonNull final Context context) {
         this.context = context.getApplicationContext();
         this.databaseProvider = new DatabaseProvider(this.context);
         logcatProvider = new LogcatProvider(this.context);
+        sysLogcatProvider = new SysLogcatProvider(this.context);
     }
 
     public DatabaseProvider getDatabaseProvider() {
@@ -32,6 +35,10 @@ public class SimpleStetho {
 
     public LogcatProvider getLogcatProvider() {
         return logcatProvider;
+    }
+
+    public SysLogcatProvider getSysLogcatProvider() {
+        return sysLogcatProvider;
     }
 
     public Context getContext() {

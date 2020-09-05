@@ -1,7 +1,8 @@
 package com.roogle.stetho.mqtt;
 
-import android.support.annotation.NonNull;
 import android.text.TextUtils;
+
+import androidx.annotation.NonNull;
 
 import com.lazy.library.logging.Logcat;
 import com.roogle.simple.stetho.SimpleStetho;

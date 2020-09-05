@@ -2,9 +2,10 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/SimpleStetho.iml" filepath="$PROJECT_DIR$/SimpleStetho.iml" />
-      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
-      <module fileurl="file://$PROJECT_DIR$/stetho/stetho.iml" filepath="$PROJECT_DIR$/stetho/stetho.iml" />
+      <module fileurl="file://$PROJECT_DIR$/SimpleStetho.iml" filepath="$PROJECT_DIR$/SimpleStetho.iml" group="SimpleStetho" />
+      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" group="SimpleStetho/app" />
+      <module fileurl="file://$PROJECT_DIR$/stetho/stetho.iml" filepath="$PROJECT_DIR$/stetho/stetho.iml" group="SimpleStetho/stetho" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/stethomqtt/stethomqtt.iml" filepath="$PROJECT_DIR$/.idea/modules/stethomqtt/stethomqtt.iml" group="SimpleStetho/stethomqtt" />
     </modules>
   </component>
 </project>

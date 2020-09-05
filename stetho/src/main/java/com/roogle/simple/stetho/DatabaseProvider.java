@@ -12,8 +12,8 @@ package com.roogle.simple.stetho;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteException;
-import android.support.annotation.IntRange;
-import android.support.annotation.NonNull;
+import androidx.annotation.IntRange;
+import androidx.annotation.NonNull;
 
 import com.lazy.library.logging.Logcat;
 import com.roogle.simple.stetho.common.ConsoleTable;

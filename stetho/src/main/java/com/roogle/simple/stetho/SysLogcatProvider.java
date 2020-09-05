@@ -8,13 +8,12 @@ import com.roogle.simple.stetho.common.DateUtil;
 import com.roogle.simple.stetho.common.StorageUtils;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -25,12 +24,12 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+// TODO: 2020/9/6
+public class SysLogcatProvider {
 
-public class LogcatProvider {
-
-    public static String LOGS_FOLDER = "logs";
+    public static String LOGS_FOLDER = "sys_logs";
     public static int MAX_SEND_LENGTH = 1024 * 1024;
-    public static long FILE_SAVE_TIME = TimeUnit.DAYS.toMillis(30);
+    public static long FILE_SAVE_TIME = TimeUnit.DAYS.toMillis(3);
     public static long ALLOWED_QUERY_TIME = TimeUnit.DAYS.toMillis(1);
 
     static final String LINE_BREAK = "\n";
@@ -42,7 +41,7 @@ public class LogcatProvider {
     private File logsFile;
     private Future<?> gatherLogExecutorServiceFuture;
 
-    public LogcatProvider(Context context) {
+    public SysLogcatProvider(Context context) {
         this.context = context;
     }
 
@@ -88,6 +87,15 @@ public class LogcatProvider {
         return DateUtil.format(new Date(), DateUtil.UTC_DATE_FORMAT_PATTERN);
     }
 
+    private static Process createSuProcess() throws IOException {
+        File rootUser = new File("/system/xbin/ru");
+        if (rootUser.exists()) {
+            return Runtime.getRuntime().exec(rootUser.getAbsolutePath());
+        } else {
+            return Runtime.getRuntime().exec("su");
+        }
+    }
+
     public void startGatherLogcatInfo() {
         gatherLogExecutorServiceFuture = gatherLogExecutorService.submit(new Runnable() {
             @Override
@@ -98,40 +106,19 @@ public class LogcatProvider {
                     destroyProcess();
                     Runtime.getRuntime().exec("logcat -c");
                     //-v time 显示log 时间 GMT
-                    process = Runtime.getRuntime().exec("logcat -v time | grep " + android.os.Process.myPid());
-                    inputStream = process.getInputStream();
-                    InputStreamReader reader = new InputStreamReader(inputStream);
-                    BufferedReader bufferedReader = new BufferedReader(reader);
+                    process = createSuProcess();
+                    OutputStream outputStream;
+                    File dateFile = getLogFile();
+                    if (dateFile != null) {
+                        String cmd = "logcat threadtime >> " + dateFile.getAbsolutePath() + "\n";
+                        outputStream = process.getOutputStream();
+                        outputStream.write(cmd.getBytes());
+                        outputStream.flush();
+                        outputStream.close();
 
-                    FileWriter out = null;
-                    BufferedWriter bufferedWriter = null;
-
-                    String line;
-                    while ((line = bufferedReader.readLine()) != null) {
-                        File dateFile = getLogFile();
-                        if (logsFile == null) {
-                            logsFile = dateFile;
-                            out = new FileWriter(logsFile, logsFile != null && logsFile.exists());
-                            bufferedWriter = new BufferedWriter(out);
-                        }
-
-                        if (logsFile != null && dateFile != null) {
-                            boolean isSameFile = logsFile.getName().equals(dateFile.getName());
-                            logsFile = dateFile;
-                            if (!isSameFile || !logsFile.exists()) {
-                                out = new FileWriter(logsFile, logsFile.exists());
-                                bufferedWriter = new BufferedWriter(out);
-                            }
-                        }
-
-                        if (bufferedWriter != null) {
-                            bufferedWriter.write(getUtcTimeString());
-                            bufferedWriter.write(": ");
-                            bufferedWriter.write(line);
-                            bufferedWriter.write(LINE_BREAK);
-                            bufferedWriter.flush();
-                        }
+                        inputStream = process.getInputStream();
                     }
+
                 } catch (IOException e) {
                     e.printStackTrace();
                 } finally {
@@ -273,41 +260,6 @@ public class LogcatProvider {
             }
         }
         return files;
-    }
-
-    void readTracesLogFile(final Consumer<String> callBack) {
-        final File file = new File("/data/anr/traces.txt");
-        if (!file.exists() || !file.canRead()) {
-            callBack.apply("Error: Can't find traces.txt");
-            return;
-        }
-        readLogExecutorService.submit(new Runnable() {
-            @Override
-            public void run() {
-                android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);
-                try {
-                    FileInputStream fileInputStream = new FileInputStream(file);
-                    InputStreamReader reader = new InputStreamReader(fileInputStream);
-                    BufferedReader bufferedReader = new BufferedReader(reader);
-                    String line;
-                    StringBuilder stringBuffer = new StringBuilder(file.getName());
-                    stringBuffer.append(LINE_BREAK);
-                    while ((line = bufferedReader.readLine()) != null) {
-                        stringBuffer.append(line);
-                        stringBuffer.append(LINE_BREAK);
-                    }
-                    if (callBack != null) {
-                        callBack.apply(stringBuffer.toString());
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    if (callBack != null) {
-                        callBack.apply("Error: occur IOException");
-                    }
-                }
-            }
-        });
-
     }
 
     public void stopGatherLogcatInfo() {
